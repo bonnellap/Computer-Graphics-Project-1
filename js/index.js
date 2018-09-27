@@ -74,36 +74,51 @@ function main() {
 }
 
 var ANGLE_STEP = 3.0;     // The increments of rotation angle (degrees)
-var g_arm1Angle = 90.0;   // The rotation angle of arm1 (degrees)
+var SPIN_STEP = 1.0;	//The increments of rotation for spinning
+var g_baseAngle = 0.0;
+var x_baseAngle = 0.0;
+var y_baseAngle = 0.0;
+var y_spinAngle = 0.0;
+/*var g_arm1Angle = 90.0;   // The rotation angle of arm1 (degrees)
 var g_joint1Angle = 45.0; // The rotation angle of joint1 (degrees)
 var g_joint2Angle = 0.0;  // The rotation angle of joint2 (degrees)
-var g_joint3Angle = 0.0;  // The rotation angle of joint3 (degrees)
+var g_joint3Angle = 0.0;  // The rotation angle of joint3 (degrees)*/
 
 function keydown(ev, gl, n, viewProjMatrix, u_MvpMatrix, u_NormalMatrix) {
   switch (ev.keyCode) {
     case 40: // Up arrow key -> the positive rotation of joint1 around the z-axis
-      if (g_joint1Angle < 135.0) g_joint1Angle += ANGLE_STEP;
+      x_baseAngle += ANGLE_STEP % 360;
+	  //if (g_joint1Angle < 135.0) g_joint1Angle += ANGLE_STEP;
       break;
     case 38: // Down arrow key -> the negative rotation of joint1 around the z-axis
-      if (g_joint1Angle > -135.0) g_joint1Angle -= ANGLE_STEP;
+      x_baseAngle -= ANGLE_STEP % 360;
+	  //if (g_joint1Angle > -135.0) g_joint1Angle -= ANGLE_STEP;
       break;
     case 39: // Right arrow key -> the positive rotation of arm1 around the y-axis
-      g_arm1Angle = (g_arm1Angle + ANGLE_STEP) % 360;
+      y_baseAngle += ANGLE_STEP % 360;
       break;
     case 37: // Left arrow key -> the negative rotation of arm1 around the y-axis
-      g_arm1Angle = (g_arm1Angle - ANGLE_STEP) % 360;
+	  y_baseAngle -= ANGLE_STEP % 360;
+	  //g_baseAngle = (g_baseAngle - ANGLE_STEP) % 360;
       break;
     case 90: // 'ｚ'key -> the positive rotation of joint2
-      g_joint2Angle = (g_joint2Angle + ANGLE_STEP) % 360;
+	  y_spinAngle = (y_spinAngle - SPIN_STEP) % 360;
+	  //y_angles[1] = 1;
+	  //y_angles = y_angles.map((d,i) => (d - i*SPIN_STEP) % 360);
+	  //g_baseAngle = (g_baseAngle - SPIN_STEP) % 360;
+	  //g_joint2Angle = (g_joint2Angle + ANGLE_STEP) % 360;
       break; 
     case 88: // 'x'key -> the negative rotation of joint2
-      g_joint2Angle = (g_joint2Angle - ANGLE_STEP) % 360;
+      y_spinAngle = (y_spinAngle + SPIN_STEP) % 360;
+	  //y_angles = y_angles.map((d,i) => (d + i*SPIN_STEP) % 360);
+	  //g_baseAngle = (g_baseAngle + SPIN_STEP) % 360;
+	  //g_joint2Angle = (g_joint2Angle - ANGLE_STEP) % 360;
       break;
     case 86: // 'v'key -> the positive rotation of joint3
-      if (g_joint3Angle < 60.0)  g_joint3Angle = (g_joint3Angle + ANGLE_STEP) % 360;
+      //if (g_joint3Angle < 60.0)  g_joint3Angle = (g_joint3Angle + ANGLE_STEP) % 360;
       break;
     case 67: // 'c'key -> the nagative rotation of joint3
-      if (g_joint3Angle > -60.0) g_joint3Angle = (g_joint3Angle - ANGLE_STEP) % 360;
+      //if (g_joint3Angle > -60.0) g_joint3Angle = (g_joint3Angle - ANGLE_STEP) % 360;
       break;
     default: return; // Skip drawing at no effective action
   }
@@ -193,10 +208,68 @@ function draw(gl, n, viewProjMatrix, u_MvpMatrix, u_NormalMatrix) {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   // Draw a base
-  var baseHeight = 5.0;
-  g_modelMatrix.setTranslate(0.0, -12.0, 0.0);
-  drawBox(gl, n, 10.0, baseHeight, 10.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
+  var baseHeight = 1.0;
+  var baseWidth = 20.0;
+  g_modelMatrix.setTranslate(0.0, -3.0, 0.0);
+  g_modelMatrix.rotate(y_baseAngle, 0.0, 1.0, 0.0);
+  g_modelMatrix.rotate(x_baseAngle, 1.0, 0.0, 0.0);
+  drawBox(gl, n, baseWidth, baseHeight, baseWidth, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
+	
+	//Draw all layers
+	var layerNum=1;
+	while(baseWidth-2*layerNum > 0){ // Keep drawing layers until it reaches the top
+		g_modelMatrix.translate(0.0, baseHeight, 0.0);
+		g_modelMatrix.rotate(y_spinAngle, 0.0, 1.0, 0.0);
+		drawBox(gl, n, baseWidth-2*layerNum, baseHeight, baseWidth-2*layerNum, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
+		layerNum++;
+	}
+	/*
+	//Draw second layer
+	g_modelMatrix.translate(0.0, baseHeight, 0.0);
+	g_modelMatrix.rotate(y_spinAngle, 0.0, 1.0, 0.0);
+	drawBox(gl, n, 18.0, baseHeight, 18.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
+	
+	//Draw third layer
+	g_modelMatrix.translate(0.0, baseHeight, 0.0);
+	g_modelMatrix.rotate(y_spinAngle, 0.0, 1.0, 0.0);
+	drawBox(gl, n, 16.0, baseHeight, 16.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
+	
+	//Draw fourth layer
+	g_modelMatrix.translate(0.0, baseHeight, 0.0);
+	g_modelMatrix.rotate(y_spinAngle, 0.0, 1.0, 0.0);
+	drawBox(gl, n, 14.0, baseHeight, 14.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
+	
+	//Draw fifth layer
+	g_modelMatrix.translate(0.0, baseHeight, 0.0);
+	g_modelMatrix.rotate(y_spinAngle, 0.0, 1.0, 0.0);
+	drawBox(gl, n, 12.0, baseHeight, 12.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
+	
+	//Draw sixth layer
+	g_modelMatrix.translate(0.0, baseHeight, 0.0);
+	g_modelMatrix.rotate(y_spinAngle, 0.0, 1.0, 0.0);
+	drawBox(gl, n, 10.0, baseHeight, 10.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
  
+	//Draw seventh layer
+	g_modelMatrix.translate(0.0, baseHeight, 0.0);
+	g_modelMatrix.rotate(y_spinAngle, 0.0, 1.0, 0.0);
+	drawBox(gl, n, 8.0, baseHeight, 8.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
+	
+	//Draw eighth layer
+	g_modelMatrix.translate(0.0, baseHeight, 0.0);
+	g_modelMatrix.rotate(y_spinAngle, 0.0, 1.0, 0.0);
+	drawBox(gl, n, 6.0, baseHeight, 6.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
+	
+	//Draw ninth layer
+	g_modelMatrix.translate(0.0, baseHeight, 0.0);
+	g_modelMatrix.rotate(y_spinAngle, 0.0, 1.0, 0.0);
+	drawBox(gl, n, 4.0, baseHeight, 4.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
+	
+	//Draw tenth layer
+	g_modelMatrix.translate(0.0, baseHeight, 0.0);
+	g_modelMatrix.rotate(y_spinAngle, 0.0, 1.0, 0.0);
+	drawBox(gl, n, 2.0, baseHeight, 2.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
+	*/
+ /*
   // Arm1
   var arm1Length = 10.0;
   g_modelMatrix.translate(0.0, baseHeight, 0.0);     // Move onto the base
@@ -229,7 +302,8 @@ function draw(gl, n, viewProjMatrix, u_MvpMatrix, u_NormalMatrix) {
   g_modelMatrix.translate(0.0, 0.0, -2.0);
   g_modelMatrix.rotate(-g_joint3Angle, 1.0, 0.0, 0.0);  // Rotate around the x-axis
   drawBox(gl, n, 1.0, 2.0, 1.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
-}
+	*/
+  }
 
 var g_matrixStack = []; // Array for storing a matrix
 function pushMatrix(m) { // Store the specified matrix to the array

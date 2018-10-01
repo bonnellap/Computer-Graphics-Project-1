@@ -73,25 +73,19 @@ function main() {
 　draw(gl, n, viewProjMatrix, u_MvpMatrix, u_NormalMatrix); // Draw the robot arm
 }
 
-var ANGLE_STEP = 3.0;     // The increments of rotation angle (degrees)
+var ANGLE_STEP = 3.0;	//The increments of rotation angle (degrees)
 var SPIN_STEP = 1.0;	//The increments of rotation for spinning
-var SCALE_STEP = 11/10;
-var g_baseAngle = 0.0;
-var x_baseAngle = 0.0;
-var y_baseAngle = 0.0;
-var z_baseAngle = 0.0;
-var y_spinAngle = 0.0;
-var x_scale = 1.0;
-var y_scale = 1.0;
-var z_scale = 1.0;
-var x_shearAngle = 0.0;
-var y_shearAngle = 0.0;
-var z_shearAngle = 0.0;
-var res = 0.0;
-/*var g_arm1Angle = 90.0;   // The rotation angle of arm1 (degrees)
-var g_joint1Angle = 45.0; // The rotation angle of joint1 (degrees)
-var g_joint2Angle = 0.0;  // The rotation angle of joint2 (degrees)
-var g_joint3Angle = 0.0;  // The rotation angle of joint3 (degrees)*/
+var SCALE_STEP = 11/10;	//The increments of scaling the model
+var x_baseAngle = 0.0;	//The base angle of rotation along the x-axis
+var y_baseAngle = 0.0;	//The base angle of rotation along the y-axis
+var z_baseAngle = 0.0;	//The base angle of rotation along the z-axis
+var y_spinAngle = 0.0;	//The spin angle which will be applied to all layers
+var x_scale = 1.0;		//The base scale value along the x-axis
+var y_scale = 1.0;		//The base scale value along the y-axis
+var z_scale = 1.0;		//The base scale value along the z-axis
+var x_shearAngle = 0.0;	//The base shear value along the x-axis
+var y_shearAngle = 0.0;	//The base shear value along the y-axis
+var z_shearAngle = 0.0;	//The base shear value along the z-axis
 
 function keydown(ev, gl, n, viewProjMatrix, u_MvpMatrix, u_NormalMatrix) {
   switch (ev.keyCode) {
@@ -108,20 +102,17 @@ function keydown(ev, gl, n, viewProjMatrix, u_MvpMatrix, u_NormalMatrix) {
 	  y_shearAngle = 0.0;
 	  z_shearAngle = 0.0;
 	  break;
-    case 40: // Up arrow key -> the positive rotation of joint1 around the z-axis
+    case 40: // Up arrow key -> the positive rotation of the model around the x-axis
       x_baseAngle += ANGLE_STEP % 360;
-	  //if (g_joint1Angle < 135.0) g_joint1Angle += ANGLE_STEP;
       break;
-    case 38: // Down arrow key -> the negative rotation of joint1 around the z-axis
+    case 38: // Down arrow key -> the negative rotation of the model around the x-axis
       x_baseAngle -= ANGLE_STEP % 360;
-	  //if (g_joint1Angle > -135.0) g_joint1Angle -= ANGLE_STEP;
       break;
-    case 39: // Right arrow key -> the positive rotation of arm1 around the y-axis
+    case 39: // Right arrow key -> the positive rotation of the model around the y-axis
       y_baseAngle += ANGLE_STEP % 360;
       break;
-    case 37: // Left arrow key -> the negative rotation of arm1 around the y-axis
+    case 37: // Left arrow key -> the negative rotation of the model around the y-axis
 	  y_baseAngle -= ANGLE_STEP % 360;
-	  //g_baseAngle = (g_baseAngle - ANGLE_STEP) % 360;
       break;
 	case 90: // 'z'key -> the positive rotation of the z-axis
 	  z_baseAngle += ANGLE_STEP % 360;
@@ -131,28 +122,19 @@ function keydown(ev, gl, n, viewProjMatrix, u_MvpMatrix, u_NormalMatrix) {
 	  break;
     case 67: // 'c'key -> spin the layers in the positive direction
 	  y_spinAngle = (y_spinAngle - SPIN_STEP) % 360;
-	  //y_angles[1] = 1;
-	  //y_angles = y_angles.map((d,i) => (d - i*SPIN_STEP) % 360);
-	  //g_baseAngle = (g_baseAngle - SPIN_STEP) % 360;
-	  //g_joint2Angle = (g_joint2Angle + ANGLE_STEP) % 360;
       break; 
     case 86: // 'v'key -> spin the layers in the negative direction
       y_spinAngle = (y_spinAngle + SPIN_STEP) % 360;
-	  //y_angles = y_angles.map((d,i) => (d + i*SPIN_STEP) % 360);
-	  //g_baseAngle = (g_baseAngle + SPIN_STEP) % 360;
-	  //g_joint2Angle = (g_joint2Angle - ANGLE_STEP) % 360;
       break;
     case 65: // 'a'key -> scale all dimensions larger
 	  if(x_scale < 3.0) x_scale *= SCALE_STEP;
 	  if(y_scale < 3.0) y_scale *= SCALE_STEP;
 	  if(z_scale < 3.0) z_scale *= SCALE_STEP;
-      //if (g_joint3Angle < 60.0)  g_joint3Angle = (g_joint3Angle + ANGLE_STEP) % 360;
       break;
     case 81: // 'q'key -> scale all dimensions smaller
 	  if(x_scale > 1/3) x_scale *= 1/SCALE_STEP;
 	  if(y_scale > 1/3) y_scale *= 1/SCALE_STEP;
 	  if(z_scale > 1/3) z_scale *= 1/SCALE_STEP;
-      //if (g_joint3Angle > -60.0) g_joint3Angle = (g_joint3Angle - ANGLE_STEP) % 360;
       break;
 	case 83: // 's'key -> scale x-dimension larger
 	  if(x_scale < 3.0) x_scale *= SCALE_STEP;
@@ -190,19 +172,6 @@ function keydown(ev, gl, n, viewProjMatrix, u_MvpMatrix, u_NormalMatrix) {
 	case 85: // 'u'key -> shear -z
 	  if(z_shearAngle > -60.0) z_shearAngle = (z_shearAngle - ANGLE_STEP) % 360;
 	  break;
-	  /*
-	case 68: // 'd'key -> shear x
-	  if(x_shearAngle < 60.0) x_shearAngle = (x_shearAngle + ANGLE_STEP) % 360;
-	  break;
-	case 70: // 'f'key -> shear x in negative direction
-	  if(x_shearAngle > -60.0) x_shearAngle = (x_shearAngle - ANGLE_STEP) % 360;
-	  break;
-	case 71: // 'g'key -> shear y
-	  if(y_shearAngle < 60.0) y_shearAngle = (y_shearAngle + ANGLE_STEP) % 360;
-	  break;
-	case 72: // 'h'key -> shear y in negative direction
-	  if(y_shearAngle > -60.0) y_shearAngle = (y_shearAngle - ANGLE_STEP) % 360;
-	  break;*/
     default: return; // Skip drawing at no effective action
   }
   // Draw the robot arm
@@ -290,6 +259,7 @@ Matrix4.prototype.setShear = function(angle_x, angle_y, angle_z) {
 	var shz = -Math.tan(angle_z * Math.PI / 180);
 	var e = this.elements;
 	
+	//The transformation function for shearing
 	e[0] = 1; e[4] = shx; e[8] = 0; e[12] = 0;
 	e[1] = shy; e[5] = 1; e[9] = shz; e[13] = 0;
 	e[2] = 0; e[6] = 0; e[10] = 1; e[14] = 0;
@@ -298,6 +268,7 @@ Matrix4.prototype.setShear = function(angle_x, angle_y, angle_z) {
 	return this;
 }
 
+//Shear function using the setShear function
 Matrix4.prototype.shear = function(angle_x, angle_y, angle_z) {
 	return this.concat(new Matrix4().setShear(angle_x, angle_y, angle_z));
 }
@@ -310,105 +281,26 @@ function draw(gl, n, viewProjMatrix, u_MvpMatrix, u_NormalMatrix) {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   // Draw a base
-  var baseHeight = 1.0;
-  var baseWidth = 20.0;
-  g_modelMatrix.setTranslate(0.0, -3.0, 0.0);
-  g_modelMatrix.rotate(z_baseAngle, 0.0, 0.0, 1.0);
-  g_modelMatrix.rotate(y_baseAngle, 0.0, 1.0, 0.0);
-  g_modelMatrix.rotate(x_baseAngle, 1.0, 0.0, 0.0);
-  g_modelMatrix.scale(x_scale, y_scale, z_scale);
-  g_modelMatrix.shear(x_shearAngle, y_shearAngle, z_shearAngle);
-  drawBox(gl, n, baseWidth, baseHeight, baseWidth, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
+  var baseHeight = 1.0;	//Set the height of the layers
+  var baseWidth = 20.0;	//Set the width and depth of the layers
+  
+  g_modelMatrix.setTranslate(0.0, -3.0, 0.0);	//Set the default translation of the base
+  g_modelMatrix.rotate(z_baseAngle, 0.0, 0.0, 1.0);	//Rotate the base in the z-direction
+  g_modelMatrix.rotate(y_baseAngle, 0.0, 1.0, 0.0);	//Rotate the base in the y-direction
+  g_modelMatrix.rotate(x_baseAngle, 1.0, 0.0, 0.0);	//Rotate the base in the x-direction
+  g_modelMatrix.scale(x_scale, y_scale, z_scale);	//Scale the model using each scaling variable
+  g_modelMatrix.shear(x_shearAngle, y_shearAngle, z_shearAngle);	//Shear the model using each shearing variable
+  drawBox(gl, n, baseWidth, baseHeight, baseWidth, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);	//Draw the base
 	
-	//Draw all layers
-	var layerNum=1;
+	//Draw all of the layers using the base as a guide
+	var layerNum=1;	//Do not change this variable, keeps track of which layer the loop is drawing
 	while(baseWidth-2*layerNum > 0){ // Keep drawing layers until it reaches the top
-		g_modelMatrix.translate(0.0, baseHeight, 0.0);
-		g_modelMatrix.rotate(y_spinAngle, 0.0, 1.0, 0.0);
-		drawBox(gl, n, baseWidth-2*layerNum, baseHeight, baseWidth-2*layerNum, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
+		g_modelMatrix.translate(0.0, baseHeight, 0.0);	//Translate each layer upwards
+		g_modelMatrix.rotate(y_spinAngle, 0.0, 1.0, 0.0);	//This is only for the spinning layers, applied to each layer separately
+		drawBox(gl, n, baseWidth-2*layerNum, baseHeight, baseWidth-2*layerNum, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);	//Draw the layer
 		layerNum++;
 	}
-	/*
-	//Draw second layer
-	g_modelMatrix.translate(0.0, baseHeight, 0.0);
-	g_modelMatrix.rotate(y_spinAngle, 0.0, 1.0, 0.0);
-	drawBox(gl, n, 18.0, baseHeight, 18.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
-	
-	//Draw third layer
-	g_modelMatrix.translate(0.0, baseHeight, 0.0);
-	g_modelMatrix.rotate(y_spinAngle, 0.0, 1.0, 0.0);
-	drawBox(gl, n, 16.0, baseHeight, 16.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
-	
-	//Draw fourth layer
-	g_modelMatrix.translate(0.0, baseHeight, 0.0);
-	g_modelMatrix.rotate(y_spinAngle, 0.0, 1.0, 0.0);
-	drawBox(gl, n, 14.0, baseHeight, 14.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
-	
-	//Draw fifth layer
-	g_modelMatrix.translate(0.0, baseHeight, 0.0);
-	g_modelMatrix.rotate(y_spinAngle, 0.0, 1.0, 0.0);
-	drawBox(gl, n, 12.0, baseHeight, 12.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
-	
-	//Draw sixth layer
-	g_modelMatrix.translate(0.0, baseHeight, 0.0);
-	g_modelMatrix.rotate(y_spinAngle, 0.0, 1.0, 0.0);
-	drawBox(gl, n, 10.0, baseHeight, 10.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
- 
-	//Draw seventh layer
-	g_modelMatrix.translate(0.0, baseHeight, 0.0);
-	g_modelMatrix.rotate(y_spinAngle, 0.0, 1.0, 0.0);
-	drawBox(gl, n, 8.0, baseHeight, 8.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
-	
-	//Draw eighth layer
-	g_modelMatrix.translate(0.0, baseHeight, 0.0);
-	g_modelMatrix.rotate(y_spinAngle, 0.0, 1.0, 0.0);
-	drawBox(gl, n, 6.0, baseHeight, 6.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
-	
-	//Draw ninth layer
-	g_modelMatrix.translate(0.0, baseHeight, 0.0);
-	g_modelMatrix.rotate(y_spinAngle, 0.0, 1.0, 0.0);
-	drawBox(gl, n, 4.0, baseHeight, 4.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
-	
-	//Draw tenth layer
-	g_modelMatrix.translate(0.0, baseHeight, 0.0);
-	g_modelMatrix.rotate(y_spinAngle, 0.0, 1.0, 0.0);
-	drawBox(gl, n, 2.0, baseHeight, 2.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
-	*/
- /*
-  // Arm1
-  var arm1Length = 10.0;
-  g_modelMatrix.translate(0.0, baseHeight, 0.0);     // Move onto the base
-  g_modelMatrix.rotate(g_arm1Angle, 0.0, 1.0, 0.0);  // Rotate around the y-axis
-  drawBox(gl, n, 3.0, arm1Length, 3.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix); // Draw
-
-  // Arm2
-  var arm2Length = 10.0;
-  g_modelMatrix.translate(0.0, arm1Length, 0.0);       // Move to joint1
-  g_modelMatrix.rotate(g_joint1Angle, 0.0, 0.0, 1.0);  // Rotate around the z-axis
-  drawBox(gl, n, 4.0, arm2Length, 4.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix); // Draw
-
-  // A palm
-  var palmLength = 2.0;
-  g_modelMatrix.translate(0.0, arm2Length, 0.0);       // Move to palm
-  g_modelMatrix.rotate(g_joint2Angle, 0.0, 1.0, 0.0);  // Rotate around the y-axis
-  drawBox(gl, n, 2.0, palmLength, 6.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);  // Draw
-
-  // Move to the center of the tip of the palm
-  g_modelMatrix.translate(0.0, palmLength, 0.0);
-
-  // Draw finger1
-  pushMatrix(g_modelMatrix);
-    g_modelMatrix.translate(0.0, 0.0, 2.0);
-    g_modelMatrix.rotate(g_joint3Angle, 1.0, 0.0, 0.0);  // Rotate around the x-axis
-    drawBox(gl, n, 1.0, 2.0, 1.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
-  g_modelMatrix = popMatrix();
-
-  // Draw finger2
-  g_modelMatrix.translate(0.0, 0.0, -2.0);
-  g_modelMatrix.rotate(-g_joint3Angle, 1.0, 0.0, 0.0);  // Rotate around the x-axis
-  drawBox(gl, n, 1.0, 2.0, 1.0, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);
-	*/
-  }
+}
 
 var g_matrixStack = []; // Array for storing a matrix
 function pushMatrix(m) { // Store the specified matrix to the array

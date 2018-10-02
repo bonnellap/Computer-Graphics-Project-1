@@ -86,8 +86,60 @@ var z_scale = 1.0;		//The base scale value along the z-axis
 var x_shearAngle = 0.0;	//The base shear value along the x-axis
 var y_shearAngle = 0.0;	//The base shear value along the y-axis
 var z_shearAngle = 0.0;	//The base shear value along the z-axis
+var x_translate = 0.0;	//The base translation along the x-axis
+var y_translate = 0.0;	//The base translation along the y-axis
+var z_translate = 0.0;	//The base translation along the z-axis
+var x_reflect = 1.0;
+var y_reflect = 1.0;
+var z_reflect = 1.0;
 
 function keydown(ev, gl, n, viewProjMatrix, u_MvpMatrix, u_NormalMatrix) {
+  //Transformation matrixes on (1,2,3):
+  //Translation:
+  //	[1 0 0 tx] [1]   [1+tx]
+  //	[0 1 0 ty].[2] = [2+ty]
+  //	[0 0 1 tz] [3]   [3+tz]
+  //	[0 0 0 1 ] [1]   [1   ]
+  //Scaling:
+  //	[sx 0  0  0] [1]   [sx  ]
+  //	[0  sy 0  0].[2] = [2*sy]
+  //	[0  0  sz 0] [3]   [3*sz]
+  //	[0  0  0  1] [1]   [1   ]
+  //Rotation (x-axis):
+  //	[1 0      0       0] [1]   [1              ]
+  //	[0 cos(a) -sin(a) 0].[2] = [2cos(a)-3sin(a)]
+  //	[0 sin(a) cos(a)  0] [3]   [2sin(a)+3cos(a)]
+  //	[0 0      0       1] [1]   [1              ]
+  //Rotation (y-axis):
+  //	[cos(a)  0 sin(a) 0] [1]   [cos(a)+3sin(a) ]
+  //	[0       1 0      0].[2] = [2              ]
+  //	[-sin(a) 0 cos(a) 0] [3]   [-sin(a)+3cos(a)]
+  //	[0       0 0      1] [1]   [1              ]
+  //Rotation (z-axis):
+  //	[cos(a) -sin(a) 0 0] [1]   [cos(a)-2sin(a)]
+  //	[sin(a) cos(a)  0 0].[2] = [sin(a)+2cos(a)]
+  //	[0      0       1 0] [3]   [3             ]
+  //	[0      0       0 1] [1]   [1             ]
+  //Mirroring (xy):
+  //	[1 0 0  0] [1]   [1 ]
+  //	[0 1 0  0].[2] = [2 ]
+  //	[0 0 -1 0] [3]   [-3]
+  //	[0 0 0  1] [1]   [1 ]
+  //Mirroring (yz):
+  //	[-1 0 0 0] [1]   [-1]
+  //	[0  1 0 0].[2] = [2 ]
+  //	[0  0 1 0] [3]   [3 ]
+  //	[0  0 0 1] [1]   [1 ]
+  //Mirroring (xz):
+  //	[1 0  0 0] [1]   [1 ]
+  //	[0 -1 0 0].[2] = [-2]
+  //	[0 0  1 0] [3]   [3 ]
+  //	[0 0  0 1] [1]   [1 ]
+  //Shearing:
+  //	[1   shx 0   0] [1]   [1+2shx    ]
+  //	[shy 1   shz 0].[2] = [shy+2+3shz]
+  //	[0   0   1   0] [3]   [3         ]
+  //	[0   0   0   1] [1]   [1         ]
   switch (ev.keyCode) {
 	case 13: // Enter key -> reset the pyramid
 	  g_baseAngle = 0.0;
@@ -101,6 +153,12 @@ function keydown(ev, gl, n, viewProjMatrix, u_MvpMatrix, u_NormalMatrix) {
 	  x_shearAngle = 0.0;
 	  y_shearAngle = 0.0;
 	  z_shearAngle = 0.0;
+	  x_translate = 0.0;
+	  y_translate = 0.0;
+	  z_translate = 0.0;
+	  x_reflect = 1.0;
+	  y_reflect = 1.0;
+	  z_reflect = 1.0;
 	  break;
     case 40: // Up arrow key -> the positive rotation of the model around the x-axis
       x_baseAngle += ANGLE_STEP % 360;
@@ -171,6 +229,33 @@ function keydown(ev, gl, n, viewProjMatrix, u_MvpMatrix, u_NormalMatrix) {
 	  break;
 	case 85: // 'u'key -> shear -z
 	  if(z_shearAngle > -60.0) z_shearAngle = (z_shearAngle - ANGLE_STEP) % 360;
+	  break;
+	case 75: // 'k' key -> translate x
+	  if(x_translate < 5.0) x_translate += 0.5;
+	  break;
+	case 73: // 'i' key -> translate x
+	  if(x_translate > -5.0) x_translate -= 0.5;
+	  break;
+	case 76: // 'l' key -> translate y
+	  if(y_translate < 5.0) y_translate += 0.5;
+	  break;
+	case 79: // 'o' key -> translate y
+	  if(y_translate > -5.0) y_translate -= 0.5;
+	  break;
+	case 186: // ';' key -> translate z
+	  if(z_translate < 5.0) z_translate += 0.5;
+	  break;
+	case 80: // 'p' key -> translate z
+	  if(z_translate > -5.0) z_translate -= 0.5;
+	  break;
+	case 49: // '1' key -> reflect yz axis
+	  x_reflect = -x_reflect;
+	  break;
+	case 50: // '2' key -> reflect xz axis
+	  y_reflect = -y_reflect;
+	  break;
+	case 51: // '3' key -> reflect xy axis
+	  z_reflect = -z_reflect;
 	  break;
     default: return; // Skip drawing at no effective action
   }
@@ -252,6 +337,24 @@ function initArrayBuffer(gl, attribute, data, type, num) {
   return true;
 }
 
+//Create a reflect function
+Matrix4.prototype.setReflect = function(x_ref, y_ref, z_ref) {
+	var e = this.elements;
+	
+	//The transformation function for shearing
+	e[0] = x_ref; e[4] = 0; e[8] = 0; e[12] = 0;
+	e[1] = 0; e[5] = y_ref; e[9] = 0; e[13] = 0;
+	e[2] = 0; e[6] = 0; e[10] = z_ref; e[14] = 0;
+	e[3] = 0; e[7] = 0; e[11] = 0; e[15] = 1;
+	
+	return this;
+}
+
+//Reflect function using the setReflect function
+Matrix4.prototype.reflect = function(x_ref, y_ref, z_ref) {
+	return this.concat(new Matrix4().setReflect(x_ref, y_ref, z_ref));
+}
+
 //Create a shear function
 Matrix4.prototype.setShear = function(angle_x, angle_y, angle_z) {
 	var shx = -Math.tan(angle_x * Math.PI / 180);
@@ -285,11 +388,13 @@ function draw(gl, n, viewProjMatrix, u_MvpMatrix, u_NormalMatrix) {
   var baseWidth = 20.0;	//Set the width and depth of the layers
   
   g_modelMatrix.setTranslate(0.0, -3.0, 0.0);	//Set the default translation of the base
+  g_modelMatrix.translate(x_translate, y_translate, z_translate);
   g_modelMatrix.rotate(z_baseAngle, 0.0, 0.0, 1.0);	//Rotate the base in the z-direction
   g_modelMatrix.rotate(y_baseAngle, 0.0, 1.0, 0.0);	//Rotate the base in the y-direction
   g_modelMatrix.rotate(x_baseAngle, 1.0, 0.0, 0.0);	//Rotate the base in the x-direction
   g_modelMatrix.scale(x_scale, y_scale, z_scale);	//Scale the model using each scaling variable
   g_modelMatrix.shear(x_shearAngle, y_shearAngle, z_shearAngle);	//Shear the model using each shearing variable
+  g_modelMatrix.reflect(x_reflect, y_reflect, z_reflect);	//Reflect the model
   drawBox(gl, n, baseWidth, baseHeight, baseWidth, viewProjMatrix, u_MvpMatrix, u_NormalMatrix);	//Draw the base
 	
 	//Draw all of the layers using the base as a guide
